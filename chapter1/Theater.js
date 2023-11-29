@@ -3,22 +3,32 @@ import plays from "./plays.json" assert {type: "json"};
 
 
 function statement(invoice, plays){
-    let totalAmount = 0;
-    let volumeCredits = 0;
     let result = `청구 내영 (고객명: ${invoice.customer})\n`;
 
     for(let perf of invoice.performances) {
-        // const play = playFor(perf)
-        volumeCredits += volumeCreditsFor(perf);
-
         // 청구 내역을 출력
         result += `${playFor(perf)}: ${usd(amountFor(perf))} (${perf.audience}석)\n`;
-        totalAmount += amountFor(perf);
     }
-    result += `총액: ${usd(totalAmount)}\n`;
-    result += `적립 포인트: ${volumeCredits}점\n`;
+    result += `총액: ${usd(totalAmount())}\n`;
+    result += `적립 포인트: ${totalVolumeCredits()}점\n`;
     return result;
+
+    function totalVolumeCredits() {
+        let volumeCredits = 0;
+        for (let perf of invoice.performances) {
+            volumeCredits += volumeCreditsFor(perf);
+        }
+        return volumeCredits;
+    }
+    function totalAmount(){
+        let result = 0;
+        for (let perf of invoice.performances) {
+            result += amountFor(perf);
+        }
+        return result;
+    }
 }
+
 
 function usd(aNumber) {
     return new Intl.NumberFormat("en-US", {
@@ -49,12 +59,12 @@ function amountFor(aPerformance) {
 }
 
 function volumeCreditsFor(aPerformance) {
-    let volumeCredits = 0;
-    volumeCredits += Math.max(aPerformance.audience - 30, 0);
+    let result = 0;
+    result += Math.max(aPerformance.audience - 30, 0);
     if ("comedy" === playFor(aPerformance).type) {
-        volumeCredits += Math.floor(aPerformance.audience / 5);
+        result += Math.floor(aPerformance.audience / 5);
     }
-    return volumeCredits;
+    return result;
 }
 
 function playFor(aPerformance) {
